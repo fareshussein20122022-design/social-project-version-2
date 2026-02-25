@@ -9,10 +9,12 @@
         :root {
             --primary: #00f2fe; --secondary: #4facfe; --bg: #010409;
             --card: rgba(13, 17, 23, 0.9); --text: #e6edf3; --accent: #79c0ff;
+            --danger: #ff4757;
         }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--bg); color: var(--text); margin: 0; padding: 20px;
+            transition: background 0.3s ease;
         }
         .main-container {
             display: grid; grid-template-columns: 350px 1fr 350px; gap: 20px;
@@ -22,21 +24,18 @@
             background: var(--card); border: 1px solid rgba(255,255,255,0.05);
             border-radius: 24px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
-        /* HIIT Timer UI */
         .timer-display { font-size: 3.5rem; font-weight: 800; color: var(--primary); text-align: center; margin: 10px 0; font-variant-numeric: tabular-nums; }
         .timer-label { text-align: center; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; color: var(--accent); }
-        
-        /* Grocery List UI */
         .grocery-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        
         .btn-glow {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none; padding: 14px; border-radius: 12px; color: #000;
             font-weight: 800; cursor: pointer; width: 100%; transition: 0.3s;
         }
         .btn-glow:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 242, 254, 0.3); }
-        
         input, textarea { background: #161b22; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; }
+        .flash-work { background: rgba(0, 242, 254, 0.15) !important; }
+        .flash-rest { background: rgba(255, 71, 87, 0.15) !important; }
     </style>
 </head>
 <body>
@@ -56,7 +55,7 @@
 
         <div class="glass-panel">
             <h3>Memory Core</h3>
-            <div id="status-pulse" style="width:10px; height:10px; background:#2ed573; border-radius:50%; display:inline-block;"></div>
+            <div id="status-pulse" style="width:10px; height:10px; background:#2ed573; border-radius:50%; display:inline-block; transition: 0.3s;"></div>
             <span style="font-size:0.8rem; margin-left:10px;">OS Synced & Active</span>
         </div>
     </aside>
@@ -70,9 +69,7 @@
 
         <div class="glass-panel">
             <h3>Grocery List (Auto-Generated)</h3>
-            <div id="grocery-container">
-                <p style="font-size:0.8rem; opacity:0.5;">No items yet.</p>
-            </div>
+            <div id="grocery-container"></div>
             <button class="btn-glow" style="margin-top:15px; background:none; border:1px solid var(--accent); color:var(--accent);" onclick="copyGrocery()">Copy List to Clipboard</button>
         </div>
     </main>
@@ -88,21 +85,36 @@
 
         <div class="glass-panel">
             <h3>Daily Logic</h3>
-            <label style="display:block; margin:10px 0;"><input type="checkbox" onchange="addXP(200)"> Morning Mobility Flow</label>
-            <label style="display:block; margin:10px 0;"><input type="checkbox" onchange="addXP(200)"> 3L Hydration Tracked</label>
-            <label style="display:block; margin:10px 0;"><input type="checkbox" onchange="addXP(200)"> Deep Work Completed</label>
+            <label style="display:block; margin:10px 0;"><input type="checkbox" id="habit-1" onchange="toggleHabit(1, 200)"> Morning Mobility Flow</label>
+            <label style="display:block; margin:10px 0;"><input type="checkbox" id="habit-2" onchange="toggleHabit(2, 200)"> 3L Hydration Tracked</label>
+            <label style="display:block; margin:10px 0;"><input type="checkbox" id="habit-3" onchange="toggleHabit(3, 200)"> Deep Work Completed</label>
         </div>
     </aside>
 </div>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('vitality_cmd')) || { xp: 0, level: 1, groceries: [] };
-    
+    // Initial State with Date Tracking
+    const today = new Date().toDateString();
+    let state = JSON.parse(localStorage.getItem('vitality_cmd')) || { 
+        xp: 0, 
+        level: 1, 
+        groceries: [], 
+        completedHabits: [], 
+        lastDate: today 
+    };
+
+    // Reset habits if it's a new day
+    if (state.lastDate !== today) {
+        state.completedHabits = [];
+        state.lastDate = today;
+    }
+
     // --- HIIT TIMER LOGIC ---
     let timer;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function beep(freq, duration) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
@@ -111,23 +123,33 @@
     }
 
     function startHIIT() {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
         let work = parseInt(document.getElementById('work-input').value);
         let rest = parseInt(document.getElementById('rest-input').value);
         let isWork = true;
         let timeLeft = work;
 
         clearInterval(timer);
+        document.getElementById('timer-status').innerText = "WORK";
+        
         timer = setInterval(() => {
-            if (timeLeft <= 3 && timeLeft > 0) beep(440, 100); // Countdown beeps
+            if (timeLeft <= 3 && timeLeft > 0) beep(440, 100); 
+            
             if (timeLeft === 0) {
                 isWork = !isWork;
                 timeLeft = isWork ? work : rest;
-                beep(isWork ? 880 : 220, 500); // High beep for work, low for rest
+                beep(isWork ? 880 : 220, 500);
+                
+                // Visual feedback
+                document.body.classList.add(isWork ? 'flash-work' : 'flash-rest');
+                setTimeout(() => document.body.classList.remove('flash-work', 'flash-rest'), 400);
+
                 document.getElementById('timer-status').innerText = isWork ? "WORK" : "REST";
-                document.getElementById('timer-status').style.color = isWork ? "var(--primary)" : "#ff4757";
+                document.getElementById('timer-status').style.color = isWork ? "var(--primary)" : "var(--danger)";
             }
-            document.getElementById('display').innerText = timeLeft.toString().padStart(2, '0');
+
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('display').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             timeLeft--;
         }, 1000);
     }
@@ -143,7 +165,6 @@
         const meal = meals[Math.floor(Math.random() * meals.length)];
         document.getElementById('recipe-name').innerText = meal.name;
         document.getElementById('recipe-ingredients').innerText = "Ingredients: " + meal.items.join(", ");
-        
         state.groceries = meal.items;
         renderGroceries();
         addXP(50);
@@ -151,36 +172,68 @@
 
     function renderGroceries() {
         const container = document.getElementById('grocery-container');
+        if (state.groceries.length === 0) {
+            container.innerHTML = `<p style="font-size:0.8rem; opacity:0.5;">No items yet.</p>`;
+            return;
+        }
         container.innerHTML = state.groceries.map(item => `<div class="grocery-item"><span>${item}</span> <span>🛒</span></div>`).join('');
         save();
     }
 
     function copyGrocery() {
+        if (state.groceries.length === 0) return;
         navigator.clipboard.writeText(state.groceries.join(", "));
-        alert("List copied!");
+        const btn = event.target;
+        btn.innerText = "COPIED!";
+        setTimeout(() => btn.innerText = "Copy List to Clipboard", 2000);
     }
 
-    // --- OS CORE ---
+    // --- OS CORE & XP ---
+    function toggleHabit(id, amt) {
+        const checkbox = document.getElementById(`habit-${id}`);
+        if (checkbox.checked) {
+            state.completedHabits.push(id);
+            addXP(amt);
+        } else {
+            state.completedHabits = state.completedHabits.filter(h => h !== id);
+            addXP(-amt);
+        }
+    }
+
     function addXP(amt) {
         state.xp += amt;
-        if(state.xp >= 1000) { state.level++; state.xp = 0; alert("Level Up!"); }
+        const threshold = 1000;
+        if(state.xp >= threshold) { 
+            state.level++; 
+            state.xp -= threshold; 
+            alert("Level Up! You are now Level " + state.level); 
+        }
+        if(state.xp < 0) state.xp = 0; // Prevent negative XP
         updateUI();
     }
 
     function updateUI() {
         document.getElementById('lvl-text').innerText = "Level " + state.level;
-        document.getElementById('xp-bar').style.width = (state.xp / 10) + "%";
+        const progress = (state.xp / 1000) * 100;
+        document.getElementById('xp-bar').style.width = progress + "%";
+        
+        // Update checkboxes from state
+        for(let i=1; i<=3; i++) {
+            document.getElementById(`habit-${i}`).checked = state.completedHabits.includes(i);
+        }
         save();
     }
 
     function save() {
         localStorage.setItem('vitality_cmd', JSON.stringify(state));
         const p = document.getElementById('status-pulse');
-        p.style.opacity = 1; setTimeout(() => p.style.opacity = 0.5, 500);
+        p.style.boxShadow = "0 0 15px #2ed573";
+        setTimeout(() => p.style.boxShadow = "none", 500);
     }
 
-    init();
-    function init() { renderGroceries(); updateUI(); }
+    // Initialize
+    renderGroceries(); 
+    updateUI();
 </script>
 </body>
 </html>
