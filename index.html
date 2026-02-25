@@ -24,8 +24,19 @@
             background: var(--card); border: 1px solid rgba(255,255,255,0.05);
             border-radius: 24px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
+
+        /* --- HIIT UI --- */
         .timer-display { font-size: 3.5rem; font-weight: 800; color: var(--primary); text-align: center; margin: 10px 0; font-variant-numeric: tabular-nums; }
         .timer-label { text-align: center; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; color: var(--accent); }
+        .round-counter { text-align: center; font-size: 0.9rem; margin-bottom: 10px; opacity: 0.8; }
+        
+        /* Flash Animations */
+        @keyframes pulse-work { 0% { background-color: rgba(0, 242, 254, 0.3); } 100% { background-color: var(--bg); } }
+        @keyframes pulse-rest { 0% { background-color: rgba(255, 71, 87, 0.3); } 100% { background-color: var(--bg); } }
+        .flash-work { animation: pulse-work 0.8s ease-out; }
+        .flash-rest { animation: pulse-rest 0.8s ease-out; }
+
+        /* General UI */
         .grocery-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
         .btn-glow {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -33,9 +44,7 @@
             font-weight: 800; cursor: pointer; width: 100%; transition: 0.3s;
         }
         .btn-glow:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 242, 254, 0.3); }
-        input, textarea { background: #161b22; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; }
-        .flash-work { background: rgba(0, 242, 254, 0.15) !important; }
-        .flash-rest { background: rgba(255, 71, 87, 0.15) !important; }
+        input { background: #161b22; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -44,6 +53,7 @@
     <aside style="display:flex; flex-direction:column; gap:20px;">
         <div class="glass-panel">
             <h3>HIIT Training Timer</h3>
+            <div class="round-counter">Round: <span id="round-num">0</span></div>
             <div class="timer-label" id="timer-status">Ready</div>
             <div class="timer-display" id="display">00:00</div>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
@@ -55,7 +65,7 @@
 
         <div class="glass-panel">
             <h3>Memory Core</h3>
-            <div id="status-pulse" style="width:10px; height:10px; background:#2ed573; border-radius:50%; display:inline-block; transition: 0.3s;"></div>
+            <div id="status-pulse" style="width:10px; height:10px; background:#2ed573; border-radius:50%; display:inline-block;"></div>
             <span style="font-size:0.8rem; margin-left:10px;">OS Synced & Active</span>
         </div>
     </aside>
@@ -68,9 +78,9 @@
         </div>
 
         <div class="glass-panel">
-            <h3>Grocery List (Auto-Generated)</h3>
+            <h3>Grocery List</h3>
             <div id="grocery-container"></div>
-            <button class="btn-glow" style="margin-top:15px; background:none; border:1px solid var(--accent); color:var(--accent);" onclick="copyGrocery()">Copy List to Clipboard</button>
+            <button class="btn-glow" style="margin-top:15px; background:none; border:1px solid var(--accent); color:var(--accent);" onclick="copyGrocery()">Copy List</button>
         </div>
     </main>
 
@@ -80,37 +90,27 @@
             <div style="background:#30363d; height:10px; border-radius:5px; overflow:hidden;">
                 <div id="xp-bar" style="height:100%; background:var(--primary); width:0%; transition:0.5s;"></div>
             </div>
-            <p style="font-size:0.7rem; margin-top:10px;">Sync daily habits to level up.</p>
         </div>
 
         <div class="glass-panel">
             <h3>Daily Logic</h3>
-            <label style="display:block; margin:10px 0;"><input type="checkbox" id="habit-1" onchange="toggleHabit(1, 200)"> Morning Mobility Flow</label>
-            <label style="display:block; margin:10px 0;"><input type="checkbox" id="habit-2" onchange="toggleHabit(2, 200)"> 3L Hydration Tracked</label>
-            <label style="display:block; margin:10px 0;"><input type="checkbox" id="habit-3" onchange="toggleHabit(3, 200)"> Deep Work Completed</label>
+            <label style="display:block; margin:10px 0;"><input type="checkbox" id="habit-1" onchange="toggleHabit(1, 200)"> Morning Mobility</label>
+            <label style="display:block; margin:10px 0;"><input type="checkbox" id="habit-2" onchange="toggleHabit(2, 200)"> 3L Hydration</label>
+            <label style="display:block; margin:10px 0;"><input type="checkbox" id="habit-3" onchange="toggleHabit(3, 200)"> Deep Work</label>
         </div>
     </aside>
 </div>
 
 <script>
-    // Initial State with Date Tracking
     const today = new Date().toDateString();
     let state = JSON.parse(localStorage.getItem('vitality_cmd')) || { 
-        xp: 0, 
-        level: 1, 
-        groceries: [], 
-        completedHabits: [], 
-        lastDate: today 
+        xp: 0, level: 1, groceries: [], completedHabits: [], lastDate: today 
     };
 
-    // Reset habits if it's a new day
-    if (state.lastDate !== today) {
-        state.completedHabits = [];
-        state.lastDate = today;
-    }
+    if (state.lastDate !== today) { state.completedHabits = []; state.lastDate = today; }
 
-    // --- HIIT TIMER LOGIC ---
     let timer;
+    let rounds = 0;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function beep(freq, duration) {
@@ -127,6 +127,8 @@
         let rest = parseInt(document.getElementById('rest-input').value);
         let isWork = true;
         let timeLeft = work;
+        rounds = 1;
+        document.getElementById('round-num').innerText = rounds;
 
         clearInterval(timer);
         document.getElementById('timer-status').innerText = "WORK";
@@ -137,11 +139,18 @@
             if (timeLeft === 0) {
                 isWork = !isWork;
                 timeLeft = isWork ? work : rest;
+                
+                if (isWork) { 
+                    rounds++; 
+                    document.getElementById('round-num').innerText = rounds;
+                }
+
                 beep(isWork ? 880 : 220, 500);
                 
-                // Visual feedback
-                document.body.classList.add(isWork ? 'flash-work' : 'flash-rest');
-                setTimeout(() => document.body.classList.remove('flash-work', 'flash-rest'), 400);
+                // Screen Flash logic
+                const flashClass = isWork ? 'flash-work' : 'flash-rest';
+                document.body.classList.add(flashClass);
+                setTimeout(() => document.body.classList.remove(flashClass), 800);
 
                 document.getElementById('timer-status').innerText = isWork ? "WORK" : "REST";
                 document.getElementById('timer-status').style.color = isWork ? "var(--primary)" : "var(--danger)";
@@ -154,7 +163,30 @@
         }, 1000);
     }
 
-    // --- MEAL & GROCERY LOGIC ---
+    // --- OS CORE ---
+    function toggleHabit(id, amt) {
+        const cb = document.getElementById(`habit-${id}`);
+        if (cb.checked) { state.completedHabits.push(id); addXP(amt); } 
+        else { state.completedHabits = state.completedHabits.filter(h => h !== id); addXP(-amt); }
+    }
+
+    function addXP(amt) {
+        state.xp += amt;
+        if(state.xp >= 1000) { state.level++; state.xp -= 1000; }
+        if(state.xp < 0) state.xp = 0;
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('lvl-text').innerText = "Level " + state.level;
+        document.getElementById('xp-bar').style.width = (state.xp / 10) + "%";
+        state.completedHabits.forEach(id => {
+            const el = document.getElementById(`habit-${id}`);
+            if(el) el.checked = true;
+        });
+        save();
+    }
+
     const meals = [
         { name: "Wild Salmon & Greens", items: ["Salmon Fillet", "Spinach", "Lemon", "Asparagus"] },
         { name: "Steak & Sweet Potato", items: ["Grass-fed Ribeye", "Sweet Potato", "Broccoli", "Butter"] },
@@ -167,71 +199,23 @@
         document.getElementById('recipe-ingredients').innerText = "Ingredients: " + meal.items.join(", ");
         state.groceries = meal.items;
         renderGroceries();
-        addXP(50);
     }
 
     function renderGroceries() {
         const container = document.getElementById('grocery-container');
-        if (state.groceries.length === 0) {
-            container.innerHTML = `<p style="font-size:0.8rem; opacity:0.5;">No items yet.</p>`;
-            return;
-        }
-        container.innerHTML = state.groceries.map(item => `<div class="grocery-item"><span>${item}</span> <span>🛒</span></div>`).join('');
+        container.innerHTML = state.groceries.length === 0 ? "No items" : 
+            state.groceries.map(item => `<div class="grocery-item"><span>${item}</span> <span>🛒</span></div>`).join('');
         save();
     }
 
     function copyGrocery() {
-        if (state.groceries.length === 0) return;
         navigator.clipboard.writeText(state.groceries.join(", "));
-        const btn = event.target;
-        btn.innerText = "COPIED!";
-        setTimeout(() => btn.innerText = "Copy List to Clipboard", 2000);
-    }
-
-    // --- OS CORE & XP ---
-    function toggleHabit(id, amt) {
-        const checkbox = document.getElementById(`habit-${id}`);
-        if (checkbox.checked) {
-            state.completedHabits.push(id);
-            addXP(amt);
-        } else {
-            state.completedHabits = state.completedHabits.filter(h => h !== id);
-            addXP(-amt);
-        }
-    }
-
-    function addXP(amt) {
-        state.xp += amt;
-        const threshold = 1000;
-        if(state.xp >= threshold) { 
-            state.level++; 
-            state.xp -= threshold; 
-            alert("Level Up! You are now Level " + state.level); 
-        }
-        if(state.xp < 0) state.xp = 0; // Prevent negative XP
-        updateUI();
-    }
-
-    function updateUI() {
-        document.getElementById('lvl-text').innerText = "Level " + state.level;
-        const progress = (state.xp / 1000) * 100;
-        document.getElementById('xp-bar').style.width = progress + "%";
-        
-        // Update checkboxes from state
-        for(let i=1; i<=3; i++) {
-            document.getElementById(`habit-${i}`).checked = state.completedHabits.includes(i);
-        }
-        save();
     }
 
     function save() {
         localStorage.setItem('vitality_cmd', JSON.stringify(state));
-        const p = document.getElementById('status-pulse');
-        p.style.boxShadow = "0 0 15px #2ed573";
-        setTimeout(() => p.style.boxShadow = "none", 500);
     }
 
-    // Initialize
     renderGroceries(); 
     updateUI();
 </script>
