@@ -3,59 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VITALITY OS | ULTIMATE UNIFIED</title>
+    <title>VITALITY OS | UNIFIED MASTER</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #00f2fe; --secondary: #4facfe; --bg: #010409;
-            --card: rgba(13, 17, 23, 0.9); --text: #e6edf3; --accent: #79c0ff;
+            --card: rgba(13, 17, 23, 0.95); --text: #e6edf3; --accent: #79c0ff;
             --danger: #ff4757; --success: #2ed573; --streak-fire: #ff9f43;
         }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background: var(--bg); color: var(--text); margin: 0; min-height: 100vh;
             background-image: radial-gradient(circle at 50% 50%, #0d1117 0%, #010409 100%);
-            overflow-x: hidden; transition: 0.5s;
+            overflow-x: hidden; transition: 0.5s ease;
         }
 
-        /* --- Hibernation & Canvas --- */
+        /* --- Neural Strings & Hibernation --- */
         #string-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; display: none; }
-        body.hibernating #main-wrapper { filter: blur(8px); opacity: 0.3; pointer-events: none; }
+        body.hibernating #main-wrapper { filter: blur(10px) grayscale(0.5); opacity: 0.3; pointer-events: none; }
 
-        /* --- Layout --- */
+        /* --- Layout Structures --- */
         header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 40px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            padding: 15px 40px; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255,255,255,0.05); position: sticky; top: 0; z-index: 100;
         }
+
         .main-container {
-            display: grid; grid-template-columns: 320px 1fr 320px; gap: 20px;
-            max-width: 1800px; margin: 20px auto; padding: 0 20px;
-        }
-        .glass-panel {
-            background: var(--card); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 24px; padding: 22px; margin-bottom: 20px;
+            display: grid; grid-template-columns: 320px 1fr 320px; gap: 25px;
+            max-width: 1800px; margin: 25px auto; padding: 0 25px;
         }
 
-        /* --- Buttons & UI --- */
-        .view-toggle { display: flex; background: #0d1117; border-radius: 12px; padding: 4px; border: 1px solid #333; }
-        .toggle-btn {
-            padding: 8px 16px; border-radius: 8px; border: none; background: none;
-            color: var(--text); cursor: pointer; font-weight: 600; font-size: 0.8rem;
+        .glass-panel {
+            background: var(--card); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 28px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            transition: border-color 0.3s;
         }
-        .toggle-btn.active { background: var(--primary); color: #000; box-shadow: 0 0 15px rgba(0, 242, 254, 0.4); }
+        .glass-panel:hover { border-color: var(--accent); }
+
+        /* --- UI Elements --- */
+        .view-toggle { display: flex; background: #0d1117; border-radius: 14px; padding: 5px; border: 1px solid #333; }
+        .toggle-btn {
+            padding: 10px 20px; border-radius: 10px; border: none; background: none;
+            color: var(--text); cursor: pointer; font-weight: 800; font-size: 0.75rem; transition: 0.3s;
+        }
+        .toggle-btn.active { background: var(--primary); color: #000; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); }
+
         .btn-glow {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border: none; padding: 12px; border-radius: 12px; color: #000; font-weight: 800; cursor: pointer; width: 100%;
+            border: none; padding: 14px; border-radius: 14px; color: #000;
+            font-weight: 800; cursor: pointer; width: 100%; transition: 0.2s;
         }
+        .btn-glow:active { transform: scale(0.97); }
+
+        .timer-display { font-size: 3.5rem; font-weight: 800; color: var(--primary); text-align: center; font-variant-numeric: tabular-nums; letter-spacing: -2px; }
+        .day-square { height: 11px; border-radius: 2px; background: #161b22; transition: 0.2s; }
         
-        .timer-display { font-size: 3.5rem; font-weight: 800; color: var(--primary); text-align: center; font-variant-numeric: tabular-nums; }
-        .day-square { height: 10px; border-radius: 2px; background: #161b22; }
-        input { background: #0d1117; border: 1px solid #333; color: white; padding: 8px; border-radius: 8px; width: 100%; box-sizing: border-box; }
+        input, select { background: #0d1117; border: 1px solid #333; color: white; padding: 10px; border-radius: 10px; width: 100%; box-sizing: border-box; }
         
-        /* Audio Buttons */
-        .audio-btn { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid #444; padding: 5px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; width: 100%; margin-top: 5px; }
-        .audio-btn.playing { border-color: var(--success); background: rgba(46, 213, 115, 0.1); }
+        .audio-btn { 
+            background: rgba(255,255,255,0.03); color: #fff; border: 1px solid #444; 
+            padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.7rem; 
+            width: 100%; margin-top: 8px; transition: 0.2s;
+        }
+        .audio-btn.playing { border-color: var(--success); background: rgba(46, 213, 115, 0.15); color: var(--success); }
+
+        .view-content { display: none; flex-direction: column; gap: 25px; animation: fadeInUp 0.5s ease; }
+        .view-content.active { display: flex; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -65,229 +82,321 @@
 <div id="main-wrapper">
     <header>
         <div style="display: flex; align-items: center; gap: 15px;">
-            <div id="status-pulse" style="width:12px; height:12px; border-radius:50%; background:var(--primary); box-shadow:0 0 10px var(--primary);"></div>
-            <h2 style="margin:0; font-size: 1.1rem; letter-spacing: 1px;">VITALITY <span id="mode-title">APEX</span></h2>
+            <div id="status-pulse" style="width:14px; height:14px; border-radius:50%; background:var(--primary); box-shadow:0 0 15px var(--primary); transition: 0.5s;"></div>
+            <h2 style="margin:0; font-weight: 800; letter-spacing: 2px; font-size: 1.2rem;">VITALITY <span id="mode-label">CORE</span></h2>
         </div>
+        
         <div class="view-toggle">
-            <button class="toggle-btn active" onclick="switchView('apex')">APEX CORE</button>
-            <button class="toggle-btn" onclick="switchView('command')">COMMAND</button>
+            <button class="toggle-btn active" id="btn-apex" onclick="switchView('apex')">APEX CORE</button>
+            <button class="toggle-btn" id="btn-command" onclick="switchView('command')">COMMAND</button>
         </div>
-        <div style="display:flex; gap:20px; align-items:center; font-weight:800;">
-            <span style="color:var(--streak-fire)">🔥 <span id="streak-val">0</span>D</span>
+
+        <div style="display:flex; gap:25px; align-items:center; font-weight:800;">
+            <span style="color:var(--streak-fire); font-size: 1.1rem;">🔥 <span id="streak-val">0</span>D</span>
+            <div id="sync-status" style="font-size: 0.6rem; opacity: 0.5;">SYNCED</div>
         </div>
     </header>
 
     <div class="main-container">
         <aside>
             <div class="glass-panel" style="text-align:center;">
-                <p style="font-size:0.6rem; opacity:0.5; margin:0;">RANK</p>
-                <h1 id="lvl-text" style="margin:5px 0;">Lvl 1</h1>
-                <div style="background:#0d1117; height:8px; border-radius:4px; overflow:hidden;">
-                    <div id="xp-bar" style="height:100%; background:var(--primary); width:0%; transition:1s;"></div>
+                <p style="font-size:0.7rem; opacity:0.5; margin-bottom:5px;">SYSTEM LEVEL</p>
+                <h1 id="lvl-text" style="margin:0; font-size: 3rem;">1</h1>
+                <div style="background:#0d1117; height:10px; border-radius:5px; overflow:hidden; margin: 15px 0;">
+                    <div id="xp-bar" style="height:100%; background:var(--primary); width:0%; transition:1.2s cubic-bezier(0.22, 1, 0.36, 1);"></div>
                 </div>
-                <p id="xp-info" style="font-size:0.7rem; opacity:0.6; margin-top:8px;">0 / 1000 XP</p>
+                <p id="xp-info" style="font-size:0.7rem; opacity:0.6;">0 / 1000 XP</p>
             </div>
 
             <div class="glass-panel">
-                <h3>Hydration</h3>
-                <div style="background:#0d1117; height:12px; border-radius:6px; overflow:hidden;">
-                    <div id="water-fill" style="height:100%; background:var(--secondary); width:0%; transition:0.5s;"></div>
+                <h3 style="margin-top:0;">Hydration</h3>
+                <div style="background:#0d1117; height:14px; border-radius:7px; overflow:hidden; margin-bottom:15px;">
+                    <div id="water-fill" style="height:100%; background:var(--secondary); width:0%; transition:0.6s;"></div>
                 </div>
-                <button class="toggle-btn" style="width:100%; margin-top:10px; background:rgba(255,255,255,0.05)" onclick="addWater()">+250ml</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="toggle-btn" style="background:rgba(255,255,255,0.05)" onclick="addWater(250)">+250ml</button>
+                    <button class="toggle-btn" style="background:rgba(255, 71, 87, 0.1); color:var(--danger)" onclick="resetWater()">Reset</button>
+                </div>
             </div>
 
             <div class="glass-panel">
-                <h3>Sleep Cycle</h3>
-                <input type="time" id="wake-time" value="06:30" onchange="calcSleep()">
-                <div id="sleep-times" style="font-size:0.8rem; color:var(--accent); margin-top:10px;">90m Cycles: --:--</div>
+                <h3 style="margin-top:0;">Sleep Cycle</h3>
+                <label style="font-size:0.7rem; opacity:0.6;">Desired Wake Time:</label>
+                <input type="time" id="wake-time" value="07:00" onchange="calcSleep()" style="margin: 10px 0;">
+                <div id="sleep-output" style="font-size:0.85rem; color:var(--accent); font-weight:600;">Sleep at: 23:30 (5 Cycles)</div>
             </div>
         </aside>
 
         <main>
-            <div id="view-apex" class="view-content" style="display:flex; flex-direction:column; gap:20px;">
+            <div id="view-apex" class="view-content active">
                 <div class="glass-panel">
-                    <h3>Neural Impact Map</h3>
-                    <div id="impact-map" style="display:grid; grid-template-columns: repeat(26, 1fr); gap:4px;"></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h3 style="margin:0;">Neural Impact Map</h3>
+                        <small style="opacity:0.4;">364-DAY CONSISTENCY LOG</small>
+                    </div>
+                    <div id="impact-map" style="display:grid; grid-template-columns: repeat(26, 1fr); gap:5px;"></div>
                 </div>
+                
                 <div class="glass-panel">
-                    <h3>Daily Objectives</h3>
+                    <h3 style="margin-top:0;">Daily Objectives</h3>
                     <div id="habit-list"></div>
                 </div>
-                <div class="glass-panel" id="zen-audio" style="display:none;">
-                    <h3>Neural Soundscapes</h3>
-                    <button class="audio-btn" id="btn-binaural" onclick="toggleSound('binaural')">Binaural Focus (10Hz)</button>
-                    <button class="audio-btn" id="btn-rain" onclick="toggleSound('rain')">Rainfall Recovery</button>
-                    <button class="audio-btn" id="btn-space" onclick="toggleSound('space')">Deep Space Drone</button>
+
+                <div class="glass-panel">
+                    <h3 style="margin-top:0;">Neural Soundscapes</h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                        <button class="audio-btn" id="btn-binaural" onclick="toggleSound('binaural')">Binaural Focus</button>
+                        <button class="audio-btn" id="btn-rain" onclick="toggleSound('rain')">Rainfall</button>
+                        <button class="audio-btn" id="btn-space" onclick="toggleSound('space')">Deep Space</button>
+                    </div>
+                    <input type="range" min="0" max="0.1" step="0.01" value="0.05" oninput="setVolume(this.value)" style="margin-top:15px;">
                 </div>
             </div>
 
-            <div id="view-command" class="view-content" style="display:none; flex-direction:column; gap:20px;">
+            <div id="view-command" class="view-content">
                 <div class="glass-panel">
-                    <h2 id="recipe-name" style="margin:0;">Fuel Optimizer</h2>
-                    <p id="recipe-ingredients" style="opacity:0.7; font-size:0.9rem;">Generate protocol for cellular recovery.</p>
-                    <button class="btn-glow" style="margin-top:15px;" onclick="getMeal()">GENERATE PROTOCOL</button>
+                    <h2 id="recipe-name" style="margin-top:0;">Fuel Optimizer</h2>
+                    <div id="meal-card" style="background:rgba(255,255,255,0.03); padding:20px; border-radius:18px; margin-bottom:20px;">
+                        <p id="recipe-ingredients" style="opacity:0.8; line-height:1.6;">Generate a tactical nutritional plan for optimal recovery.</p>
+                    </div>
+                    <button class="btn-glow" onclick="getMeal()">GENERATE PROTOCOL</button>
                 </div>
+
                 <div class="glass-panel">
-                    <h3>Grocery Core</h3>
-                    <div id="grocery-list" style="font-family:monospace; font-size:0.8rem;"></div>
+                    <h3 style="margin-top:0;">Tactical Grocery Core</h3>
+                    <div id="grocery-list" style="font-family: monospace; font-size: 0.9rem; color: var(--accent);"></div>
+                    <button class="toggle-btn" style="width:100%; border:1px solid #444; margin-top:15px;" onclick="copyGrocery()">COPY TO CLIPBOARD</button>
                 </div>
             </div>
         </main>
 
         <aside>
             <div class="glass-panel">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3>HIIT Engine</h3>
-                    <span id="hiit-round" style="color:var(--primary); font-weight:800;">R0</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3 style="margin:0;">HIIT Engine</h3>
+                    <div id="hiit-round" style="color:var(--primary); font-weight:800; font-size: 1.2rem;">R0</div>
                 </div>
-                <div id="timer-status" style="text-align:center; font-size:0.7rem; color:var(--accent); letter-spacing:2px;">READY</div>
+                <div id="timer-status" style="text-align:center; font-size:0.7rem; color:var(--accent); letter-spacing:4px; font-weight:800;">READY</div>
                 <div class="timer-display" id="hiit-display">00:00</div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;">
-                    <input type="number" id="work-in" value="40">
-                    <input type="number" id="rest-in" value="20">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0;">
+                    <div><small style="opacity:0.5;">WORK (S)</small><input type="number" id="work-in" value="40"></div>
+                    <div><small style="opacity:0.5;">REST (S)</small><input type="number" id="rest-in" value="20"></div>
                 </div>
-                <button class="btn-glow" onclick="startHIIT()">INITIATE</button>
+                <button class="btn-glow" onclick="startHIIT()">INITIATE SESSION</button>
             </div>
 
             <div class="glass-panel">
-                <h3>Fasting Protocol</h3>
-                <div id="fast-display" style="font-size:1.8rem; font-weight:800; text-align:center;">00:00:00</div>
-                <button class="toggle-btn" style="width:100%; margin-top:10px; color:var(--danger)" onclick="state.fastStart=Date.now(); updateUI();">RESET</button>
+                <h3 style="margin-top:0;">Fasting Protocol</h3>
+                <div id="fast-display" style="font-size:2.2rem; font-weight:800; text-align:center; font-variant-numeric: tabular-nums; margin: 10px 0;">00:00:00</div>
+                <button class="toggle-btn" style="width:100%; background:rgba(255, 71, 87, 0.1); color:var(--danger)" onclick="resetFast()">RESET FAST</button>
             </div>
         </aside>
     </div>
 </div>
 
 <script>
-    let state = JSON.parse(localStorage.getItem('vitality_final')) || {
-        xp: 0, level: 1, streak: 0, water: 0, impact: [], fastStart: Date.now(), completedHabits: []
+    // --- System State ---
+    let state = JSON.parse(localStorage.getItem('vitality_master')) || {
+        xp: 0, level: 1, streak: 0, water: 0, impact: [], fastStart: Date.now(), completedHabits: [], currentView: 'apex'
     };
 
-    const habits = ["Morning Sunlight", "100oz Water", "Meditation", "Deep Work Block"];
-    const meals = [{name:"Salmon & Avocado", items:["Salmon","Avocado","Spinach"]}, {name:"Steak & Broccoli", items:["Ribeye","Broccoli","Ghee"]}];
-    
-    // --- Audio & Beeps ---
+    const habits = ["Morning Sunlight", "Cold Exposure", "90m Deep Work", "100oz Hydration"];
+    const meals = [
+        { name: "Apex Salmon Bowl", items: ["Wild Salmon", "Avocado", "Spinach", "Quinoa", "Lemon"] },
+        { name: "Power Ribeye Plate", items: ["Grass-fed Ribeye", "Broccoli", "Sweet Potato", "Grass-fed Butter"] },
+        { name: "Zen Recovery Salad", items: ["Chicken Breast", "Mixed Greens", "Walnuts", "Olive Oil", "Berries"] }
+    ];
+
+    // --- Audio System ---
     let audioCtx, osc, noise, gainNode, currentSound = null;
-    function initAudio() { if(!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); gainNode = audioCtx.createGain(); gainNode.connect(audioCtx.destination); gainNode.gain.value = 0.05; } }
-    function beep(f, d) { initAudio(); const o = audioCtx.createOscillator(); o.connect(gainNode); o.frequency.value = f; o.start(); setTimeout(()=>o.stop(), d); }
+    function initAudio() {
+        if(!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            gainNode = audioCtx.createGain();
+            gainNode.connect(audioCtx.destination);
+            gainNode.gain.value = 0.05;
+        }
+    }
 
     function toggleSound(type) {
         initAudio();
-        if(currentSound === type) { stopSounds(); return; }
+        if (currentSound === type) { stopSounds(); return; }
         stopSounds();
         currentSound = type;
         document.getElementById(`btn-${type}`).classList.add('playing');
-        if(type === 'binaural') { osc = audioCtx.createOscillator(); osc.frequency.value = 100; osc.connect(gainNode); osc.start(); }
-        else {
+        
+        if (type === 'binaural') {
+            osc = audioCtx.createOscillator(); osc.frequency.value = 100; osc.connect(gainNode); osc.start();
+        } else {
             const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
-            for(let i=0; i<buffer.length; i++) data[i] = Math.random()*2-1;
+            for(let i=0; i<buffer.length; i++) data[i] = Math.random() * 2 - 1;
             noise = audioCtx.createBufferSource(); noise.buffer = buffer; noise.loop = true;
-            const filter = audioCtx.createBiquadFilter(); filter.type = (type === 'rain') ? 'lowpass' : 'bandpass';
-            filter.frequency.value = (type === 'rain') ? 400 : 100;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = (type === 'rain') ? 'lowpass' : 'bandpass';
+            filter.frequency.value = (type === 'rain') ? 450 : 120;
             noise.connect(filter); filter.connect(gainNode); noise.start();
         }
     }
-    function stopSounds() { if(osc) osc.stop(); if(noise) noise.stop(); currentSound = null; document.querySelectorAll('.audio-btn').forEach(b=>b.classList.remove('playing')); }
+    function stopSounds() { 
+        if(osc) { osc.stop(); osc = null; } 
+        if(noise) { noise.stop(); noise = null; } 
+        currentSound = null; 
+        document.querySelectorAll('.audio-btn').forEach(b => b.classList.remove('playing')); 
+    }
+    function setVolume(v) { if(gainNode) gainNode.gain.value = v; }
+    function beep(f, d) { initAudio(); const o = audioCtx.createOscillator(); o.connect(gainNode); o.frequency.value = f; o.start(); setTimeout(() => o.stop(), d); }
 
-    // --- Neural Strings (60s Idle) ---
+    // --- Neural Strings (Idle Animation) ---
     const canvas = document.getElementById('string-canvas');
     const ctx = canvas.getContext('2d');
     let idleTime = 0, strings = [];
-    const colors = ['#00f2fe', '#4facfe', '#ff4757', '#fbc531'];
+    const colorHex = ['#00f2fe', '#4facfe', '#ff4757', '#fbc531']; // Greenish-Cyan, Blue, Red, Yellow
 
     function initStrings() {
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        strings = colors.map(c => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: Math.random()*2-1, vy: Math.random()*2-1, color: c, history: [] }));
+        strings = colorHex.map(c => ({
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3,
+            color: c, history: []
+        }));
     }
+
     function animateStrings() {
-        if(idleTime < 60) { canvas.style.display='none'; document.body.classList.remove('hibernating'); return; }
-        canvas.style.display='block'; document.body.classList.add('hibernating');
-        ctx.clearRect(0,0,canvas.width, canvas.height);
+        if(idleTime < 60) { canvas.style.display = 'none'; document.body.classList.remove('hibernating'); return; }
+        canvas.style.display = 'block'; document.body.classList.add('hibernating');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
         strings.forEach(s => {
             s.x += s.vx; s.y += s.vy;
-            if(s.x<0||s.x>canvas.width) s.vx*=-1; if(s.y<0||s.y>canvas.height) s.vy*=-1;
-            s.history.push({x:s.x, y:s.y}); if(s.history.length>40) s.history.shift();
-            ctx.beginPath(); ctx.strokeStyle = s.color; ctx.lineWidth=2; ctx.moveTo(s.history[0].x, s.history[0].y);
-            s.history.forEach(p=>ctx.lineTo(p.x,p.y)); ctx.stroke();
+            if(s.x < 0 || s.x > canvas.width) s.vx *= -1;
+            if(s.y < 0 || s.y > canvas.height) s.vy *= -1;
+            s.history.push({x: s.x, y: s.y});
+            if(s.history.length > 50) s.history.shift();
+            ctx.beginPath(); ctx.strokeStyle = s.color; ctx.lineWidth = 3; ctx.shadowBlur = 15; ctx.shadowColor = s.color;
+            ctx.moveTo(s.history[0].x, s.history[0].y);
+            s.history.forEach(p => ctx.lineTo(p.x, p.y)); ctx.stroke();
         });
         requestAnimationFrame(animateStrings);
     }
-    window.onmousemove = window.onkeydown = () => { idleTime=0; };
-    setInterval(() => { idleTime++; if(idleTime===60) { initStrings(); animateStrings(); } }, 1000);
 
-    // --- Core Logic ---
+    window.onmousemove = window.onkeydown = () => { idleTime = 0; };
+    setInterval(() => { idleTime++; if(idleTime === 60) { initStrings(); animateStrings(); } }, 1000);
+
+    // --- Navigation & Core Logic ---
     function switchView(view) {
-        document.getElementById('view-apex').style.display = view==='apex'?'flex':'none';
-        document.getElementById('view-command').style.display = view==='command'?'flex':'none';
-        document.getElementById('zen-audio').style.display = view==='apex'?'block':'none';
-        document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById('mode-title').innerText = view.toUpperCase();
-        document.getElementById('status-pulse').style.background = view==='apex'?'var(--primary)':'var(--streak-fire)';
+        state.currentView = view;
+        document.getElementById('view-apex').classList.toggle('active', view === 'apex');
+        document.getElementById('view-command').classList.toggle('active', view === 'command');
+        document.getElementById('btn-apex').classList.toggle('active', view === 'apex');
+        document.getElementById('btn-command').classList.toggle('active', view === 'command');
+        
+        const pulse = document.getElementById('status-pulse');
+        pulse.style.background = view === 'apex' ? 'var(--primary)' : 'var(--streak-fire)';
+        pulse.style.boxShadow = `0 0 15px ${view === 'apex' ? 'var(--primary)' : 'var(--streak-fire)'}`;
+        document.getElementById('mode-label').innerText = view === 'apex' ? 'APEX CORE' : 'COMMAND';
+        save();
     }
 
-    function addWater() { state.water = Math.min(state.water+250, 3000); updateUI(); }
-    
+    function addXP(amt) {
+        state.xp += amt;
+        if(state.xp >= 1000) { state.level++; state.xp -= 1000; beep(880, 250); }
+        if(state.xp < 0) state.xp = 0;
+        updateUI();
+    }
+
     function toggleHabit(idx) {
-        if(state.completedHabits.includes(idx)) state.completedHabits = state.completedHabits.filter(i=>i!==idx);
-        else { state.completedHabits.push(idx); addXP(250); const t = Math.floor(Date.now()/86400000)%364; if(!state.impact.includes(t)) { state.impact.push(t); state.streak++; } }
+        if(state.completedHabits.includes(idx)) {
+            state.completedHabits = state.completedHabits.filter(i => i !== idx);
+            addXP(-250);
+        } else {
+            state.completedHabits.push(idx);
+            addXP(250);
+            const dayIdx = Math.floor(Date.now() / 86400000) % 364;
+            if(!state.impact.includes(dayIdx)) { state.impact.push(dayIdx); state.streak++; }
+        }
         updateUI(); renderImpactMap();
     }
 
-    function addXP(a) { state.xp+=a; if(state.xp>=1000){ state.level++; state.xp-=1000; beep(880,200); } updateUI(); }
-
     function updateUI() {
-        document.getElementById('lvl-text').innerText = "Lvl " + state.level;
-        document.getElementById('xp-bar').style.width = (state.xp/10)+"%";
-        document.getElementById('xp-info').innerText = `${state.xp}/1000 XP`;
-        document.getElementById('water-fill').style.width = (state.water/3000*100)+"%";
+        document.getElementById('lvl-text').innerText = state.level;
+        document.getElementById('xp-bar').style.width = (state.xp / 10) + "%";
+        document.getElementById('xp-info').innerText = `${state.xp} / 1000 XP`;
+        document.getElementById('water-fill').style.width = (state.water / 3000 * 100) + "%";
         document.getElementById('streak-val').innerText = state.streak;
-        localStorage.setItem('vitality_final', JSON.stringify(state));
+        
+        const sync = document.getElementById('sync-status');
+        sync.innerText = "UPDATING...";
+        setTimeout(() => sync.innerText = "SYNCED", 500);
+        save();
     }
 
     function renderImpactMap() {
         const m = document.getElementById('impact-map'); m.innerHTML = '';
         for(let i=0; i<364; i++) {
-            const d = document.createElement('div'); d.className='day-square';
-            if(state.impact.includes(i)) d.style.background='var(--primary)';
+            const d = document.createElement('div'); d.className = 'day-square';
+            if(state.impact.includes(i)) d.style.background = 'var(--primary)';
             m.appendChild(d);
         }
     }
 
     function startHIIT() {
-        let w=parseInt(document.getElementById('work-in').value), r=parseInt(document.getElementById('rest-in').value), t=w, isW=true, rnd=1;
+        let w = parseInt(document.getElementById('work-in').value), 
+            r = parseInt(document.getElementById('rest-in').value), 
+            t = w, isW = true, rnd = 1;
+        beep(660, 400);
         const timer = setInterval(() => {
-            t--; if(t<0) { isW=!isW; if(isW) rnd++; t=isW?w:r; beep(isW?880:440, 400); }
-            document.getElementById('hiit-display').innerText = `00:${t.toString().padStart(2,'0')}`;
-            document.getElementById('hiit-round').innerText = "R"+rnd;
-            document.getElementById('timer-status').innerText = isW?"WORK":"REST";
-            if(rnd>8) { clearInterval(timer); addXP(500); }
+            t--;
+            if(t < 0) {
+                isW = !isW;
+                if(isW) rnd++;
+                t = isW ? w : r;
+                beep(isW ? 880 : 440, 500);
+            }
+            document.getElementById('hiit-display').innerText = `00:${t.toString().padStart(2, '0')}`;
+            document.getElementById('hiit-round').innerText = "R" + rnd;
+            document.getElementById('timer-status').innerText = isW ? "WORK" : "REST";
+            document.getElementById('timer-status').style.color = isW ? "var(--primary)" : "var(--danger)";
+            if(rnd > 8) { clearInterval(timer); addXP(500); document.getElementById('timer-status').innerText = "COMPLETE"; }
         }, 1000);
     }
 
     function getMeal() {
-        const m = meals[Math.floor(Math.random()*meals.length)];
+        const m = meals[Math.floor(Math.random() * meals.length)];
         document.getElementById('recipe-name').innerText = m.name;
-        document.getElementById('grocery-list').innerHTML = m.items.map(i=>`• ${i}<br>`).join('');
+        document.getElementById('grocery-list').innerHTML = m.items.map(i => `<div style="padding:8px 0; border-bottom:1px solid #161b22;">✔️ ${i}</div>`).join('');
     }
 
     function calcSleep() {
-        const [h,m] = document.getElementById('wake-time').value.split(':').map(Number);
-        const d = new Date(); d.setHours(h,m,0);
-        const s = new Date(d.getTime() - (7.5*60*60*1000));
-        document.getElementById('sleep-times').innerText = `Sleep at: ${s.getHours().toString().padStart(2,'0')}:${s.getMinutes().toString().padStart(2,'0')}`;
+        const [h, m] = document.getElementById('wake-time').value.split(':').map(Number);
+        const d = new Date(); d.setHours(h, m, 0);
+        const s = new Date(d.getTime() - (7.5 * 60 * 60 * 1000));
+        document.getElementById('sleep-output').innerText = `Sleep at: ${s.getHours().toString().padStart(2,'0')}:${s.getMinutes().toString().padStart(2,'0')} (5 Cycles)`;
     }
 
+    function addWater(v) { state.water = Math.min(state.water + v, 3000); updateUI(); }
+    function resetWater() { state.water = 0; updateUI(); }
+    function resetFast() { state.fastStart = Date.now(); updateUI(); }
+    function save() { localStorage.setItem('vitality_master', JSON.stringify(state)); }
+
+    // --- Init ---
     window.onload = () => {
         renderImpactMap();
-        document.getElementById('habit-list').innerHTML = habits.map((h,i)=>`<label style="display:block;margin:10px 0;"><input type="checkbox" onchange="toggleHabit(${i})" ${state.completedHabits.includes(i)?'checked':''}> ${h}</label>`).join('');
+        document.getElementById('habit-list').innerHTML = habits.map((h, i) => `
+            <label style="display:flex; align-items:center; gap:12px; margin:15px 0; cursor:pointer; font-size:0.9rem;">
+                <input type="checkbox" onchange="toggleHabit(${i})" ${state.completedHabits.includes(i) ? 'checked' : ''}> ${h}
+            </label>
+        `).join('');
+        
+        switchView(state.currentView);
         updateUI();
+        calcSleep();
+        
         setInterval(() => {
-            const d = Date.now()-state.fastStart;
-            const h = Math.floor(d/3600000).toString().padStart(2,'0');
-            const m = Math.floor((d%3600000)/60000).toString().padStart(2,'0');
-            const s = Math.floor((d%60000)/1000).toString().padStart(2,'0');
+            const diff = Date.now() - state.fastStart;
+            const h = Math.floor(diff/3600000).toString().padStart(2,'0');
+            const m = Math.floor((diff%3600000)/60000).toString().padStart(2,'0');
+            const s = Math.floor((diff%60000)/1000).toString().padStart(2,'0');
             document.getElementById('fast-display').innerText = `${h}:${m}:${s}`;
         }, 1000);
     };
