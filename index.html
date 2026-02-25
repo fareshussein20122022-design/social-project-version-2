@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VITALITY OS | Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f2fe; --secondary: #4facfe; --bg: #010409;
+            --card: rgba(13, 17, 23, 0.9); --text: #e6edf3; --accent: #79c0ff;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg); color: var(--text); margin: 0; padding: 20px;
+        }
+        .main-container {
+            display: grid; grid-template-columns: 350px 1fr 350px; gap: 20px;
+            max-width: 1700px; margin: 0 auto;
+        }
+        .glass-panel {
+            background: var(--card); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 24px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        /* HIIT Timer UI */
+        .timer-display { font-size: 3.5rem; font-weight: 800; color: var(--primary); text-align: center; margin: 10px 0; font-variant-numeric: tabular-nums; }
+        .timer-label { text-align: center; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; color: var(--accent); }
+        
+        /* Grocery List UI */
+        .grocery-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        
+        .btn-glow {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none; padding: 14px; border-radius: 12px; color: #000;
+            font-weight: 800; cursor: pointer; width: 100%; transition: 0.3s;
+        }
+        .btn-glow:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 242, 254, 0.3); }
+        
+        input, textarea { background: #161b22; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <aside style="display:flex; flex-direction:column; gap:20px;">
+        <div class="glass-panel">
+            <h3>HIIT Training Timer</h3>
+            <div class="timer-label" id="timer-status">Ready</div>
+            <div class="timer-display" id="display">00:00</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">
+                <div><small>Work (s)</small><input type="number" id="work-input" value="40"></div>
+                <div><small>Rest (s)</small><input type="number" id="rest-input" value="20"></div>
+            </div>
+            <button class="btn-glow" onclick="startHIIT()">Start HIIT Session</button>
+        </div>
+
+        <div class="glass-panel">
+            <h3>Memory Core</h3>
+            <div id="status-pulse" style="width:10px; height:10px; background:#2ed573; border-radius:50%; display:inline-block;"></div>
+            <span style="font-size:0.8rem; margin-left:10px;">OS Synced & Active</span>
+        </div>
+    </aside>
+
+    <main style="display:flex; flex-direction:column; gap:20px;">
+        <div class="glass-panel">
+            <h2 id="recipe-name">Fuel Optimizer</h2>
+            <p id="recipe-ingredients" style="opacity:0.7;">Click to generate a plan.</p>
+            <button class="btn-glow" onclick="getMeal()">Generate Meal + Grocery List</button>
+        </div>
+
+        <div class="glass-panel">
+            <h3>Grocery List (Auto-Generated)</h3>
+            <div id="grocery-container">
+                <p style="font-size:0.8rem; opacity:0.5;">No items yet.</p>
+            </div>
+            <button class="btn-glow" style="margin-top:15px; background:none; border:1px solid var(--accent); color:var(--accent);" onclick="copyGrocery()">Copy List to Clipboard</button>
+        </div>
+    </main>
+
+    <aside style="display:flex; flex-direction:column; gap:20px;">
+        <div class="glass-panel" style="text-align:center;">
+            <h1 id="lvl-text">Level 1</h1>
+            <div style="background:#30363d; height:10px; border-radius:5px; overflow:hidden;">
+                <div id="xp-bar" style="height:100%; background:var(--primary); width:0%; transition:0.5s;"></div>
+            </div>
+            <p style="font-size:0.7rem; margin-top:10px;">Sync daily habits to level up.</p>
+        </div>
+
+        <div class="glass-panel">
+            <h3>Daily Logic</h3>
+            <label style="display:block; margin:10px 0;"><input type="checkbox" onchange="addXP(200)"> Morning Mobility Flow</label>
+            <label style="display:block; margin:10px 0;"><input type="checkbox" onchange="addXP(200)"> 3L Hydration Tracked</label>
+            <label style="display:block; margin:10px 0;"><input type="checkbox" onchange="addXP(200)"> Deep Work Completed</label>
+        </div>
+    </aside>
+</div>
+
+<script>
+    let state = JSON.parse(localStorage.getItem('vitality_cmd')) || { xp: 0, level: 1, groceries: [] };
+    
+    // --- HIIT TIMER LOGIC ---
+    let timer;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function beep(freq, duration) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.value = freq; gain.gain.value = 0.1;
+        osc.start(); setTimeout(() => osc.stop(), duration);
+    }
+
+    function startHIIT() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        let work = parseInt(document.getElementById('work-input').value);
+        let rest = parseInt(document.getElementById('rest-input').value);
+        let isWork = true;
+        let timeLeft = work;
+
+        clearInterval(timer);
+        timer = setInterval(() => {
+            if (timeLeft <= 3 && timeLeft > 0) beep(440, 100); // Countdown beeps
+            if (timeLeft === 0) {
+                isWork = !isWork;
+                timeLeft = isWork ? work : rest;
+                beep(isWork ? 880 : 220, 500); // High beep for work, low for rest
+                document.getElementById('timer-status').innerText = isWork ? "WORK" : "REST";
+                document.getElementById('timer-status').style.color = isWork ? "var(--primary)" : "#ff4757";
+            }
+            document.getElementById('display').innerText = timeLeft.toString().padStart(2, '0');
+            timeLeft--;
+        }, 1000);
+    }
+
+    // --- MEAL & GROCERY LOGIC ---
+    const meals = [
+        { name: "Wild Salmon & Greens", items: ["Salmon Fillet", "Spinach", "Lemon", "Asparagus"] },
+        { name: "Steak & Sweet Potato", items: ["Grass-fed Ribeye", "Sweet Potato", "Broccoli", "Butter"] },
+        { name: "Quinoa Power Bowl", items: ["Quinoa", "Chickpeas", "Kale", "Tahini", "Avocado"] }
+    ];
+
+    function getMeal() {
+        const meal = meals[Math.floor(Math.random() * meals.length)];
+        document.getElementById('recipe-name').innerText = meal.name;
+        document.getElementById('recipe-ingredients').innerText = "Ingredients: " + meal.items.join(", ");
+        
+        state.groceries = meal.items;
+        renderGroceries();
+        addXP(50);
+    }
+
+    function renderGroceries() {
+        const container = document.getElementById('grocery-container');
+        container.innerHTML = state.groceries.map(item => `<div class="grocery-item"><span>${item}</span> <span>🛒</span></div>`).join('');
+        save();
+    }
+
+    function copyGrocery() {
+        navigator.clipboard.writeText(state.groceries.join(", "));
+        alert("List copied!");
+    }
+
+    // --- OS CORE ---
+    function addXP(amt) {
+        state.xp += amt;
+        if(state.xp >= 1000) { state.level++; state.xp = 0; alert("Level Up!"); }
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById('lvl-text').innerText = "Level " + state.level;
+        document.getElementById('xp-bar').style.width = (state.xp / 10) + "%";
+        save();
+    }
+
+    function save() {
+        localStorage.setItem('vitality_cmd', JSON.stringify(state));
+        const p = document.getElementById('status-pulse');
+        p.style.opacity = 1; setTimeout(() => p.style.opacity = 0.5, 500);
+    }
+
+    init();
+    function init() { renderGroceries(); updateUI(); }
+</script>
+</body>
+</html>
